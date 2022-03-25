@@ -1,0 +1,22 @@
+node {
+ def mavenhome = tool name : "maven 3.8.5"
+stage('code'){
+ git branch: 'development', credentialsId: 'b5abf2a7-31be-4aca-8a7a-adeeaaddebdf', url: 'https://github.com/practicinggit/maven-web-application.git'   
+}  //code closer
+stage('build'){
+sh "$mavenhome/bin/mvn clean package"
+}// build stage closer
+//sonar report
+stage("sonar report"){
+sh "$mavenhome/bin/mvn sonar:sonar"
+}// closing tag of sonar report
+stage('arificate repo nexus'){
+sh "$mavenhome/bin/mvn deploy"
+}// stage closer for artifact repo
+//deploy application in to tomcat
+stage("deploy"){
+sshagent(['23e7a9f0-0508-4075-8faf-b57d1e64466e']) {
+sh "scp -o  StrictHostKeyChecking=no target/maven-web-application.war ec2-user@13.235.70.176:/opt/apache-tomcat-9.0.59/webapps"
+}
+}// closer of deloy tomcat stage 
+}//node closer
